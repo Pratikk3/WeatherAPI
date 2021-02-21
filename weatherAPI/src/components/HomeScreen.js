@@ -4,7 +4,8 @@ import React, { Component } from 'react';
 import { Alert, Dimensions, FlatList, Image, Modal, PermissionsAndroid, Platform, SafeAreaView, StatusBar, Text, View } from 'react-native';
 import { create } from 'apisauce'
 import Geolocation from '@react-native-community/geolocation';
-
+import { setWeatherToday, setWeatherFor5Days } from '../actions/commonActions'
+import { connect } from 'react-redux';
 
 class HomeScreen extends Component {
     state = {
@@ -32,7 +33,7 @@ class HomeScreen extends Component {
 
     async componentDidMount() {
 
-        console.log("Location", Geolocation)
+        console.log("Location", this.props)
         let lat, lon
         Geolocation.getCurrentPosition(data => {
             console.log(data)
@@ -84,6 +85,8 @@ class HomeScreen extends Component {
                 day.push(dateObj.getDay());
             }
         });
+        this.props.setWeatherToday(weatherDetail[0])
+        this.props.setWeatherFor5Days(weatherDetail)
         let lastdateObj = new Date(data[data.length - 1].dt * 1000);
         weatherDetail.push(parseInt(data[data.length - 1].main.temp_max - 273));
         day.push(lastdateObj.getDay() + 1 == 7 ? 0 : lastdateObj.getDay() + 1);
@@ -164,12 +167,13 @@ class HomeScreen extends Component {
                                 Delhi
                             </Text>
                             <Text style={{ fontSize: 30, textAlign: 'center', fontWeight: 'bold' }}>
-                                {weatherDetail[0]}
+                                {this.props.weatherToday}
                             </Text>
                         </View>
                         <View style={{ height: Dimensions.get('window').height / 2, justifyContent: 'center' }}>
                             <FlatList
-                                data={this.state.weatherDetail}
+                                extraData={this.props}
+                                data={this.props.weatherFor5Days}
                                 renderItem={({ item, index }) => this.renderItem(item, index)}
                                 keyExtractor={(item, index) => 'key' + index}
                             />
@@ -181,6 +185,24 @@ class HomeScreen extends Component {
     }
 }
 
-export default HomeScreen;
+
+const mapStateToProps = state => {
+    let props = {};
+    props.weatherToday = state.common.weatherToday;
+    props.weatherFor5Days = state.common.weatherFor5Days
+    return props;
+};
+
+const mapDispatchToProps = (dispatch, props) => ({
+    setWeatherToday: function (weatherToday) {
+        dispatch(setWeatherToday(weatherToday))
+    },
+    setWeatherFor5Days: function (weatherFor5Days) {
+        dispatch(setWeatherFor5Days(weatherFor5Days))
+    },
+})
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);
 
 // export default connect(mapStateToprops, mapDispatchtoProps)(HomeScreen)

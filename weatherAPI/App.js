@@ -23,16 +23,19 @@ import {
   DebugInstructions,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import { Provider } from 'react-redux';
+import createStore from './createStore';
 import HomeScreen from './src/components/HomeScreen';
+
+const { store } = createStore()
 
 const App: () => React$Node = () => {
   return (
-    <>
-      <StatusBar barStyle="dark-content" />
+    <Provider store={store}>
       <SafeAreaView>
         <HomeScreen />
       </SafeAreaView>
-    </>
+    </Provider>
   );
 };
 
